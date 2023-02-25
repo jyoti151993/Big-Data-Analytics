@@ -1,0 +1,89 @@
+
+========================Static partitioning=============================================
+use jan23;
+
+create table student_new(name string, roll_np int, per float)partitioned by(state string,city string) row format delimited fields terminated by ',';
+
+desc student_new;
+
+---------loading the data--------------
+load data local inpath '/media/sf_MyWork/HiveData/partstudmah' into table student_new partition(state='Maharashtra',city='Pune');
+
+hive (jan23)> load data local inpath '/media/sf_MyWork/HiveData/partstudgujart' into table student_new partition(state='Gujarat',city='Surat');
+
+=================Dynamic Partitioning======================================
+Enable the dynamic partition by using the following commands: -
+set hive.exec.dynamic.partition=true;    
+set hive.exec.dynamic.partition.mode=nonstrict; 
+
+----create a dummy student table
+create table student_demo(name string, roll_no int, per float, state string, city string)row format delimited fields terminated by ','; 
+
+hive (jan23)> load data local inpath '/media/sf_MyWork/HiveData/partstud1' into table student_demo;
+
+create table student_dypar(name string, roll_np int, per float)partitioned by(state string,city string) row format delimited fields terminated by ',';
+
+hive (jan23)> insert into student_dypar partition(state,city) select * from student_demo;
+
+===================Bucketing============================================================
+--Create a dummy table to store the data
+
+create table sample_table(first_name string, last_name string) row format delimited fields terminated by ',' stored as textfile;
+
+hive (jan23)> load data local inpath '/media/sf_MyWork/HiveData/db2' into table sample_table;
+
+--add ppt
+set hive.enforce.bucketing=true;
+
+--create a bucket table
+create table my_bucket_table(int id, f_name string, l_name string) clustered by (id) into 3 buckets row format delimited fields terminated by ',' stored as textfile;
+
+insert overwrite table my_bucket_table select * from sample_table;
+
+=================UDF====================================================================
+create table fruit(f_name string, fcost int, fcity string) row format delimited fields terminated by '\t';
+
+create table new_fruit(f_name string, fcost int, fcity string) row format delimited fields terminated by '\t';
+
+hive (jan23)> add jar /media/sf_MyWork/HiveData/RemoveSpace.jar;
+create temporary function MyFun as 'com.remove.RemoveSpace';
+hive (jan23)> select MyFun(fcity),MyFun(f_name),fcost from fruits;
+
+insert overwrite table new_fruit select MyFun(f_name), MyFun(fcity),fcost from fruits;
+
+=================JOINS======================================================
+create table emp99 (e_id int,e_name string, e_salary float, gender string, e_dept_id int) row format delimited fields terminated by ','; 
+
+create table dept (e_dept_id int, dept_name string, dept_location string) row format delimited fields terminated by ','; 
+
+hive (jan23)> load data local inpath '/media/sf_MyWork/HiveData/emp_new.txt' into table emp99;
+
+hive (jan23)> load data local inpath '/media/sf_MyWork/HiveData/dept.txt' into table dept;
+
+select * from emp99 e inner join dept d on e.e_dept_id = d.e_dept_id;
+
+select e.e_dept_id, sum(e_salary) from dept d join emp99 e on e.e_dept_id=d.e_dept_id group by e.e_dept_id;
+
+====================Word Count in Hive ====================
+create table words (line string) row format delimited fields terminated by '\t';
+hive (jan23)> load data local inpath '/media/sf_MyWork/HiveData/words.txt' into table words;
+
+select col, count(*) 
+from (select explode(split(line, ' ')) as col from words
+)t 
+group by col
+order by col;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,104 @@
+
+
+Find out the total  no of orders placed by each customer in the year 2013  order status should be "COMPLETE"
+output should contain customer_fname, customer_lname, order_count
+
+===============================Read customers data================================================================================================
+scala> val customers=sc.textFile("/home/jyoti/Downloads/customers.txt")
+customers: org.apache.spark.rdd.RDD[String] = /home/jyoti/Downloads/customers.txt MapPartitionsRDD[1] at textFile at <console>:23
+
+
+scala> val c1=customers.map(x=>x.split(","))
+c1: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[2] at map at <console>:23
+
+scala> c1.collect
+res1: Array[Array[String]] = Array(Array(1, Richard, Hernandez, XXXXXXXXX, XXXXXXXXX, 6303 Heather Plaza, Brownsville, TX, 78521), Array(2, Mary, Barrett, XXXXXXXXX, XXXXXXXXX, 9526 Noble Embers Ridge, Littleton, CO, 80126), Array(3, Ann, Smith, XXXXXXXXX, XXXXXXXXX, 3422 Blue Pioneer Bend, Caguas, PR, 00725), Array(4, Mary, Jones, XXXXXXXXX, XXXXXXXXX, 8324 Little Common, San Marcos, CA, 92069), Array(5, Robert, Hudson, XXXXXXXXX, XXXXXXXXX, "10 Crystal River Mall ", Caguas, PR, 00725), Array(6, Mary, Smith, XXXXXXXXX, XXXXXXXXX, 3151 Sleepy Quail Promenade, Passaic, NJ, 07055), Array(7, Melissa, Wilcox, XXXXXXXXX, XXXXXXXXX, 9453 High Concession, Caguas, PR, 00725), Array(8, Megan, Smith, XXXXXXXXX, XXXXXXXXX, 3047 Foggy Forest Plaza, Lawrence, MA, 01841), Ar...
+
+
+scala> val c2=c1.map(x=>(x(0),x))
+c2: org.apache.spark.rdd.RDD[(String, Array[String])] = MapPartitionsRDD[10] at map at <console>:23
+
+scala> c2.collect()
+res12: Array[(String, Array[String])] = Array((1,Array(1, Richard, Hernandez, XXXXXXXXX, XXXXXXXXX, 6303 Heather Plaza, Brownsville, TX, 78521)), (2,Array(2, Mary, Barrett, XXXXXXXXX, XXXXXXXXX, 9526 Noble Embers Ridge, Littleton, CO, 80126)), (3,Array(3, Ann, Smith, XXXXXXXXX, XXXXXXXXX, 3422 Blue Pioneer Bend, Caguas, PR, 00725)), (4,Array(4, Mary, Jones, XXXXXXXXX, XXXXXXXXX, 8324 Little Common, San Marcos, CA, 92069)), (5,Array(5, Robert, Hudson, XXXXXXXXX, XXXXXXXXX, "10 Crystal River Mall ", Caguas, PR, 00725)), (6,Array(6, Mary, Smith, XXXXXXXXX, XXXXXXXXX, 3151 Sleepy Quail Promenade, Passaic, NJ, 07055)), (7,Array(7, Melissa, Wilcox, XXXXXXXXX, XXXXXXXXX, 9453 High Concession, Caguas, PR, 00725)), (8,Array(8, Megan, Smith, XXXXXXXXX, XXXXXXXXX, 3047 Fo...
+
+
+================================================== Read Orders data====================================================
+scala> val orders=sc.textFile("/home/jyoti/Downloads/orders.txt")
+orders: org.apache.spark.rdd.RDD[String] = /home/jyoti/Downloads/orders.txt MapPartitionsRDD[5] at textFile at <console>:23
+
+scala> orders.collect
+23/01/08 12:32:46 WARN TransportClientFactory: DNS resolution succeed for jyoti-Inspiron-14-5420.bbrouter/192.168.1.6:39187 took 5014 ms
+23/01/08 12:32:46 WARN TransportClientFactory: DNS resolution succeed for jyoti-Inspiron-14-5420.bbrouter/192.168.1.6:39187 took 5014 ms
+res3: Array[String] = Array(1,2013-07-25 00:00:00.0,11599,CLOSED, 2,2013-07-25 00:00:00.0,256,PENDING_PAYMENT, 3,2013-07-25 00:00:00.0,12111,COMPLETE, 4,2013-07-25 00:00:00.0,8827,CLOSED, 5,2013-07-25 00:00:00.0,11318,COMPLETE, 6,2013-07-25 00:00:00.0,7130,COMPLETE, 7,2013-07-25 00:00:00.0,4530,COMPLETE, 8,2013-07-25 00:00:00.0,2911,PROCESSING, 9,2013-07-25 00:00:00.0,5657,PENDING_PAYMENT, 10,2013-07-25 00:00:00.0,5648,PENDING_PAYMENT, 11,2013-07-25 00:00:00.0,918,PAYMENT_REVIEW, 12,2013-07-25 00:00:00.0,1837,CLOSED, 13,2013-07-25 00:00:00.0,9149,PENDING_PAYMENT, 14,2013-07-25 00:00:00.0,9842,PROCESSING, 15,2013-07-25 00:00:00.0,2568,COMPLETE, 16,2013-07-25 00:00:00.0,7276,PENDING_PAYMENT, 17,2013-07-25 00:00:00.0,2667,COMPLETE, 18,2013-07-25 00:00:00.0,1205,CL...
+
+
+scala> val ord1=orders.map(x=>x.split(","))
+ord1: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[6] at map at <console>:23
+
+scala> ord1.collect
+res4: Array[Array[String]] = Array(Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED), Array(2, 2013-07-25 00:00:00.0, 256, PENDING_PAYMENT), Array(3, 2013-07-25 00:00:00.0, 12111, COMPLETE), Array(4, 2013-07-25 00:00:00.0, 8827, CLOSED), Array(5, 2013-07-25 00:00:00.0, 11318, COMPLETE), Array(6, 2013-07-25 00:00:00.0, 7130, COMPLETE), Array(7, 2013-07-25 00:00:00.0, 4530, COMPLETE), Array(8, 2013-07-25 00:00:00.0, 2911, PROCESSING), Array(9, 2013-07-25 00:00:00.0, 5657, PENDING_PAYMENT), Array(10, 2013-07-25 00:00:00.0, 5648, PENDING_PAYMENT), Array(11, 2013-07-25 00:00:00.0, 918, PAYMENT_REVIEW), Array(12, 2013-07-25 00:00:00.0, 1837, CLOSED), Array(13, 2013-07-25 00:00:00.0, 9149, PENDING_PAYMENT), Array(14, 2013-07-25 00:00:00.0, 9842, PROCESSING), Array(15, 20...
+
+
+val ord2=ord1.filter(x=>x(1).contains("2013"))
+ord2: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[7] at filter at <console>:23
+
+scala> ord2.collect
+res5: Array[Array[String]] = Array(Array(1, 2013-07-25 00:00:00.0, 11599, CLOSED), Array(2, 2013-07-25 00:00:00.0, 256, PENDING_PAYMENT), Array(3, 2013-07-25 00:00:00.0, 12111, COMPLETE), Array(4, 2013-07-25 00:00:00.0, 8827, CLOSED), Array(5, 2013-07-25 00:00:00.0, 11318, COMPLETE), Array(6, 2013-07-25 00:00:00.0, 7130, COMPLETE), Array(7, 2013-07-25 00:00:00.0, 4530, COMPLETE), Array(8, 2013-07-25 00:00:00.0, 2911, PROCESSING), Array(9, 2013-07-25 00:00:00.0, 5657, PENDING_PAYMENT), Array(10, 2013-07-25 00:00:00.0, 5648, PENDING_PAYMENT), Array(11, 2013-07-25 00:00:00.0, 918, PAYMENT_REVIEW), Array(12, 2013-07-25 00:00:00.0, 1837, CLOSED), Array(13, 2013-07-25 00:00:00.0, 9149, PENDING_PAYMENT), Array(14, 2013-07-25 00:00:00.0, 9842, PROCESSING), Array(15, 20...
+
+
+scala> val ord3=ord2.filter(x=>(x(3)=="COMPLETE"))
+ord3: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[8] at filter at <console>:23
+
+scala> ord3.collect
+res6: Array[Array[String]] = Array(Array(3, 2013-07-25 00:00:00.0, 12111, COMPLETE), Array(5, 2013-07-25 00:00:00.0, 11318, COMPLETE), Array(6, 2013-07-25 00:00:00.0, 7130, COMPLETE), Array(7, 2013-07-25 00:00:00.0, 4530, COMPLETE), Array(15, 2013-07-25 00:00:00.0, 2568, COMPLETE), Array(17, 2013-07-25 00:00:00.0, 2667, COMPLETE), Array(22, 2013-07-25 00:00:00.0, 333, COMPLETE), Array(26, 2013-07-25 00:00:00.0, 7562, COMPLETE), Array(28, 2013-07-25 00:00:00.0, 656, COMPLETE), Array(32, 2013-07-25 00:00:00.0, 3960, COMPLETE), Array(35, 2013-07-25 00:00:00.0, 4840, COMPLETE), Array(45, 2013-07-25 00:00:00.0, 2636, COMPLETE), Array(56, 2013-07-25 00:00:00.0, 10519, COMPLETE), Array(63, 2013-07-25 00:00:00.0, 1148, COMPLETE), Array(65, 2013-07-25 00:00:00.0, 5903, ...
+
+scala> val
+scala> val ord4=ord3.map(x=>(x(2),x))
+ord4: org.apache.spark.rdd.RDD[(String, Array[String])] = MapPartitionsRDD[9] at map at <console>:23
+
+scala> ord4.collect
+res7: Array[(String, Array[String])] = Array((12111,Array(3, 2013-07-25 00:00:00.0, 12111, COMPLETE)), (11318,Array(5, 2013-07-25 00:00:00.0, 11318, COMPLETE)), (7130,Array(6, 2013-07-25 00:00:00.0, 7130, COMPLETE)), (4530,Array(7, 2013-07-25 00:00:00.0, 4530, COMPLETE)), (2568,Array(15, 2013-07-25 00:00:00.0, 2568, COMPLETE)), (2667,Array(17, 2013-07-25 00:00:00.0, 2667, COMPLETE)), (333,Array(22, 2013-07-25 00:00:00.0, 333, COMPLETE)), (7562,Array(26, 2013-07-25 00:00:00.0, 7562, COMPLETE)), (656,Array(28, 2013-07-25 00:00:00.0, 656, COMPLETE)), (3960,Array(32, 2013-07-25 00:00:00.0, 3960, COMPLETE)), (4840,Array(35, 2013-07-25 00:00:00.0, 4840, COMPLETE)), (2636,Array(45, 2013-07-25 00:00:00.0, 2636, COMPLETE)), (10519,Array(56, 2013-07-25 00:00:00.0, 10519,...
+
+==============================================Join order and customers data=======================================================================
+
+
+scala> val join_data=c2.join(ord4)
+join_data: org.apache.spark.rdd.RDD[(String, (Array[String], Array[String]))] = MapPartitionsRDD[13] at join at <console>:24
+
+
+
+scala> join_data.collect
+res15: Array[(String, (Array[String], Array[String]))] = Array((8602,(Array(8602, Timothy, Gilbert, XXXXXXXXX, XXXXXXXXX, 469 Middle Berry Abbey, Caguas, PR, 00725),Array(13198, 2013-10-13 00:00:00.0, 8602, COMPLETE))), (3492,(Array(3492, Mary, Smith, XXXXXXXXX, XXXXXXXXX, 9144 Gentle Dale, Campbell, CA, 95008),Array(11633, 2013-10-04 00:00:00.0, 3492, COMPLETE))), (3492,(Array(3492, Mary, Smith, XXXXXXXXX, XXXXXXXXX, 9144 Gentle Dale, Campbell, CA, 95008),Array(59007, 2013-09-12 00:00:00.0, 3492, COMPLETE))), (11909,(Array(11909, Mary, Nguyen, XXXXXXXXX, XXXXXXXXX, 4021 Cozy Bluff Boulevard, Alameda, CA, 94501),Array(21858, 2013-12-06 00:00:00.0, 11909, COMPLETE))), (8989,(Array(8989, Sarah, Aguilar, XXXXXXXXX, XXXXXXXXX, 8898 Misty Townline, Caguas, PR, 00725...
+
+
+
+
+scala> val res=join_data.map(x=>x._2)
+res: org.apache.spark.rdd.RDD[(Array[String], Array[String])] = MapPartitionsRDD[13] at map at <console>:23
+
+scala> res.collect
+res7: Array[(Array[String], Array[String])] = Array((Array(8602, Timothy, Gilbert, XXXXXXXXX, XXXXXXXXX, 469 Middle Berry Abbey, Caguas, PR, 00725),Array(13198, 2013-10-13 00:00:00.0, 8602, COMPLETE)), (Array(3492, Mary, Smith, XXXXXXXXX, XXXXXXXXX, 9144 Gentle Dale, Campbell, CA, 95008),Array(11633, 2013-10-04 00:00:00.0, 3492, COMPLETE)), (Array(3492, Mary, Smith, XXXXXXXXX, XXXXXXXXX, 9144 Gentle Dale, Campbell, CA, 95008),Array(59007, 2013-09-12 00:00:00.0, 3492, COMPLETE)), (Array(11909, Mary, Nguyen, XXXXXXXXX, XXXXXXXXX, 4021 Cozy Bluff Boulevard, Alameda, CA, 94501),Array(21858, 2013-12-06 00:00:00.0, 11909, COMPLETE)), (Array(8989, Sarah, Aguilar, XXXXXXXXX, XXXXXXXXX, 8898 Misty Townline, Caguas, PR, 00725),Array(15086, 2013-10-28 00:00:00.0, 8989, CO...
+
+
+scala> val res1=res.map(x=>((x._1(1)+" "+x._1(2)),1))
+res1: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[23] at map at <console>:23
+
+
+scala> res1.collect
+res13: Array[(String, Int)] = Array((Timothy Gilbert,1), (Mary Smith,1), (Mary Smith,1), (Mary Nguyen,1), (Sarah Aguilar,1), (Sandra Ray,1), (Mary Morse,1), (Mary Morse,1), (Julie Wilson,1), (Julie Wilson,1), (Mary Moore,1), (Mary Moore,1), (Timothy Vega,1), (James Holmes,1), (Mary Smith,1), (Joyce Smith,1), (Joyce Smith,1), (Mary Olson,1), (Mary Olson,1), (Mary Olson,1), (Ann Werner,1), (Zachary Hunt,1), (Janice Bishop,1), (Janice Bishop,1), (Mary Wiggins,1), (Mary Wiggins,1), (Mary Wiggins,1), (Mary Stephens,1), (Keith Smith,1), (Jesse Matthews,1), (Jesse Matthews,1), (Jesse Matthews,1), (Benjamin Smith,1), (Mary Smith,1), (Albert Thompson,1), (Mary Yoder,1), (Mary Yoder,1), (Austin Lambert,1), (Justin White,1), (George Conner,1), (Mary Romero,1), (Mary Santi...
+
+scala> val res2=res1.reduceByKey(_+_)
+res2: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[24] at reduceByKey at <console>:23
+
+scala> res2.collect
+res14: Array[(String, Int)] = Array((Crystal Ballard,1), (Joshua Mckinney,1), (Janice Brown,1), (Jason Beck,1), (Justin Garcia,2), (Mary Rosario,4), (Lawrence Deleon,1), (Daniel Joseph,1), (Mary Hernandez,9), (Jacob Clark,1), (Jack Beck,1), (Mary Wells,2), (Jennifer Mills,2), (Albert Mayer,2), (Mary Davenport,2), (Mary Schroeder,1), (Maria Richards,1), (Virginia Smith,12), (Michael Garcia,2), (Beverly Smith,7), (Catherine Johnson,3), (Mary Torres,10), (Jordan Kelley,1), (Janice Harrison,2), (Mary Murphy,2), (Mary Harris,16), (Grace Wilson,1), (Edward Smith,10), (Frances Stanley,1), (Stephanie Larson,2), (Judy Webb,2), (Jack Gilmore,1), (Mary Hatfield,2), (Mary Johnson,17), (Kathryn Carter,2), (Jennifer Palmer,1), (Amy Davenport,1), (Karen Smith,18), (Mary Price...
+
+scala> res2.take(5)
+res15: Array[(String, Int)] = Array((Crystal Ballard,1), (Joshua Mckinney,1), (Janice Brown,1), (Jason Beck,1), (Justin Garcia,2))
+
+scala> res2.sortBy(x=>x._2,false).collect
+res24: Array[(String, Int)] = Array((Mary Smith,1406), (James Smith,54), (John Smith,35), (David Smith,35), (Robert Smith,34), (William Smith,31), (Michael Smith,27), (Christopher Smith,25), (Sharon Smith,25), (Jessica Smith,25), (Jennifer Smith,24), (Elizabeth Smith,24), (Mary Jones,23), (Matthew Smith,23), (Evelyn Smith,22), (Timothy Smith,22), (Deborah Smith,21), (Mark Smith,20), (Mary Williams,20), (Mary Brown,20), (Ruth Smith,19), (Eric Smith,19), (Patricia Smith,19), (Mary Ward,19), (Donald Smith,19), (Ashley Smith,19), (Karen Smith,18), (Nicholas Smith,18), (Joseph Smith,18), (Sarah Smith,18), (Margaret Smith,18), (Andrew Smith,18), (Rebecca Smith,18), (Madison Smith,18), (Cynthia Smith,18), (Thomas Smith,18), (Donna Smith,18), (Susan Smith,18), (Mary Ma...
+
+
+
+

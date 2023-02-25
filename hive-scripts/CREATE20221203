@@ -1,0 +1,160 @@
+create table employee (
+emp_name string,
+emp_Work_place ARRAY<string>,
+emp_gen_age STRUCT<sex:string,age:int>,
+emp_skills_score MAP<string,int>,
+emp_depart_title MAP<STRING,ARRAY<STRING>>
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':';
+
+
+create external table if not exists mydb5.employee_external (
+name string,
+Work_place ARRAY<string>,
+sex_age STRUCT<sex:string,age:int>,
+skills_score MAP<string,int>,
+depart_title MAP<STRING,ARRAY<STRING>>
+)
+comment 'this is an external table'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+stored as textfile
+location '/data30/';
+
+create table mydb5.employee_partitioned (
+emp_name string,
+emp_Work_place ARRAY<string>,
+emp_gen_age STRUCT<sex:string,age:int>,
+emp_skills_score MAP<string,int>,
+emp_depart_title MAP<STRING,ARRAY<STRING>>)
+partitioned by (emp_depart_title MAP<STRING,ARRAY<STRING>>)
+comment 'this is an partitioned table'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':';
+
+load data local inpath '/media/sf_MyWork/employee.txt' into table mydb5.employee_partitioned partition(emp_depart_title='Gujrat'); 
+
+create table bucket_table1(id int,name string,lastname string) clustered by (id) into 5 buckets row format delimited fields terminated by ','stored as textfile;
+
+insert overwrite table bucket_table1 select * from sample_table1;
+
+
+select emp.emp_name, emph.employee_id, emp.emp_work_place from employee emp join employee_hr emph on emp.emp_name=emph.name;
+
+create table Employees (UserId string,jobTitleName string,firstName string,lastName string,prefferedFullName string,employeeCode string,region string,phoneNumber string,emailAddress string) row format serde 'org.apache.hadoop.hive.contrib.serde2.JsonSerde';
+
+load data local inpath '/media/sf_MyWork/employees.json' into table employees;
+
+select name from employees where firstName like 'T%' and lastName like 'H%';
+
+select userid, jobtitlename, employeecode, region from employees where firstName like 'T%' and lastName like 'H%';
+
+
+create table user_xml(id int,name string) 
+row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (
+"column.xpath.id"="/user/id/text()", "column.xpath.name"="/user/name/text()"
+) 
+stored as 
+inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat' tblproperties( 
+"xmlinput.start"="<user>",
+"xmlinput.end"="</user>"
+);
+
+create table owners (id int, name string, age int, card_id int) row format delimited fields terminated by ',' stored as textfile;  
+
+
+create table new_fruit(f_name string, fcost int, fcity string) row format delimited fields terminated by '\t';
+
+add jar /media/sf_MyWork/MyUDF101v2.jar;
+
+
+
+create table players (e_id int,e_name string, e_lastname string, e_salary float) row format delimited fields terminated by ','; 
+
+create table new_players (e_id int,e_name string, e_lastname string, e_salary float) row format delimited fields terminated by ','; 
+
+load data local inpath '/media/sf_MyWork/data' into table players;
+
+add jar /media/sf_MyWork/MyUDF101.jar;
+
+
+create temporary function MyFun as 'com.example.RemoveSpace';
+
+insert into new_players select e_id,  MyFun(MyFun(e_name, '#'),'$'), MyFun(MyFun(e_lastname, '$'), '#'), e_salary from players;
+
+
+ explain select name, country,salary from emps inner join  on where name = 'sunny';
+
+explain select * from cars c inner join owners o on c.car_id = o.card_id;
+
+create table emp99 (e_id int,e_name string, e_salary float, gender string, e_dept_id int) row format delimited fields terminated by ','; 
+
+create table dept (e_dept_id int, dept_name string, dept_location string) row format delimited fields terminated by ','; 
+
+
+load data local inpath '/media/sf_MyWork/emp_new.txt' into table emp99;
+
+load data local inpath '/media/sf_MyWork/dept.txt' into table dept;
+
+explain select * from emp99 e inner join dept d on e.e_dept_id = d.e_dept_id;
+
+explain select e.e_dept_id, sum(e_salary) from dept d join emp99 e on e.e_dept_id=d.e_dept_id group by e.e_dept_id;
+
+explain select d.dept_location, sum(e_salary) from dept d inner join emp99 e on e.e_dept_id=d.e_dept_id group by d.dept_location;
+
+create table empdetails (id int, name string, country string, sal int) stored as ORCFILE;
+
+insert into empdetails select * from emp;
+*--------------------------------------------------*
+create table logs (IP_Address string, DateT string, Type_Http_call string, Http_Status string, URL string) row format delimited fields terminated by ',';
+
+load data local inpath '/media/sf_MyWork/Weblogs.csv' into table logs;
+
+create table IP_Mapping (IP_address string,Country string, Browser string, City string) 
+row format delimited fields terminated by ',';
+
+load data local inpath '/media/sf_MyWork/IP_Mapping.csv' into table ip_mapping;
+
+select count(l.IP_Address) as q_sessions, i.country from logs l inner join ip_mapping i on l.IP_Address = i.IP_Address group by i.country;
+
+select count(l.IP_Address) as q_sessions, i.city from logs l inner join ip_mapping i on l.IP_Address = i.IP_Address group by i.city;
+
+select count(l.IP_Address) as q_sessions, i.Browser from logs l inner join ip_mapping i on l.IP_Address = i.IP_Address group by i.Browser;
+
+select sum(case when http_status !=200 then 1 else 0 end) / (count(l.IP_Address)/1000) n_errors from logs l;
+
+select (sum(case when http_status !=200 then 1 else 0 end) / count(l.IP_Address))*1000 n_errors from logs l;
+
+
+
+create table words (line string) row format delimited fields terminated by '\t';
+
+select w, count(*) 
+from (select explode(split(line, ' ')) as w from words
+)t 
+group by w
+order by w;
+
+
+select w, count(*) 
+from (select explode(split(line, ' ')) as w from words
+)t 
+group by w
+order by w;
+
+create table orders (id int, order_date timestamp, customer_id int, status string) stored as ORCFILE;
+
+create table forders (id int, order_date timestamp, customer_id int, status string) row format delimited fields terminated by ',';
+
+insert into orders select * from forders;
+
+select count(id) count_order, customer_id from orders where year(order_date) = 2014 and status = 'COMPLETE' GROUP by customer_id;
+
+select count(id) count_order, customer_id from orders where year(order_date) = 2013 and status = 'COMPLETE' GROUP by customer_id;

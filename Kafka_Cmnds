@@ -1,0 +1,45 @@
+
+
+==================================For Latest Versions==========================================
+
+# to list the topics 
+sudo /usr/local/Kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:2181
+
+# To start the kafka
+sudo /usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
+
+# To create the topic
+sudo /usr/local/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:2181 --replication-factor 1  --partitions 1 --topic prac
+
+# To start the producer
+sudo /usr/local/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic prac
+
+# To start the consumer
+sudo /usr/local/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:2181 --topic prac --from-beginning
+
+
+#to stop the kafka
+sudo /usr/local/kafka/bin/kafka-server-stop.sh /usr/local/kafka/config/server.properties
+=============================For OLDER VERSION /JIGSAW VM================================================================================
+
+
+# To start the kafka
+sudo /usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
+
+
+#T list the topics
+sudo /usr/local/Kafka/bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+# To create the topic
+sudo /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1  --partitions 1 --topic prac
+
+# To start the producer
+sudo /usr/local/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic prac
+
+# To start the consumer
+sudo /usr/local/kafka/bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic prac --from-beginning
+
+
+#to stop the kafka
+sudo /usr/local/kafka/bin/kafka-server-stop.sh /usr/local/kafka/config/server.properties
+

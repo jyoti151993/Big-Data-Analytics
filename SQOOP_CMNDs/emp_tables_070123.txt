@@ -1,0 +1,23 @@
+create table emp(id int primary key,name varchar(40), deg varchar(50), salary int, dept varchar(60));
+
+insert into emp values(1201,'gopal','manager',50000,'TP');
+insert into emp values(1202,'Manisha','Proof reader',50000,'TP');
+insert into emp values(1203,'Khalil','php dev',30000,'AC');
+insert into emp values(1204,'Prasanth','php dev',30000,'AC');
+insert into emp values(1205,'Kranthi','admin',20000,'TP');
+
+create table emp_add(id int primary key,hno varchar(50), street varchar(45), city varchar(40));
+
+insert into emp_add values(1201,'288A','vgiri','jublee');
+insert into emp_add values(1202,'108I','aoc','sec-bad');
+insert into emp_add values(1203,'144Z','pgutta','hyd');
+insert into emp_add values(1204,'78B','old city','sec-bad');
+insert into emp_add values(1205,'720X','hitec','sec-bad');
+
+create table(id int primary key, phno int, email varchar(40));
+
+insert into emp_add values(1201, 2356742,'gopal@tp.com')
+insert into emp_add values(1202, 1661663,'manisha@tp.com')
+insert into emp_add values(1203, 8887776,'khalil@ac.com')
+insert into emp_add values(1204, 9988774,'prasanth@ac.com')
+insert into emp_add values(1205, 1231231 'kranthi@tp.com')

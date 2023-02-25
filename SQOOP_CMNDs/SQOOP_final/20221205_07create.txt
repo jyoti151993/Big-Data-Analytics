@@ -1,0 +1,164 @@
+cmnd>>mysql -u root -p;
+
+create table student( roll_no int primary key, stud_name varchar(30), stud_marks int);
+
+insert into student values(100, 'john', 750);
+insert into student values(101, 'Abhishek', 800);
+insert into student values(102, 'Tushar', 950);
+insert into student values(103, 'Gaby', 850);
+
+for importing the data from MYSQL to HDFS we have to run SQOOP JOB.
+
+#grant all privileges on stud.* to '%'@'localhost';
+
+127.0.0.1<-- my sql running on this ip address
+
+#grant all privileges on stud.* to '%'@'localhost';
+#grant all privileges on mydb5.* to '%'@'localhost';
+#grant all privileges on mydb5.* to ''@'localho
+
+
+# script to get the data from SQOOP to HDFS:
+------------------------------------------------
+# for importing data from mysql to hdfs
+admin1@admin1:~$ sqoop import --connect jdbc:mysql://localhost/mydb5 --table student;
+
+>>sqoop -version;string
+
+# for introducting Mapper(gives record using single mapper avoid partitioning):
+>>sqoop import --connect jdbc:mysql://localhost/mydb5 --table student -m 1 --target-dir '/myimport1/';
+#To check all records  target dir /myimport1/part-m-00000 : 
+>>hdfs dfs -cat /myimport1/part-m-00000;
+
+
+
+#by default "," sep
+#to change seperator:
+-----------------------
+sqoop import --connect jdbc:mysql://localhost/mydb5 --table student -m 1 --fields-terminated-by '|' --target-dir '/myimport2/';
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --table student -m 1 --fields-terminated-by ':' --target-dir '/myimport3/';
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --table student -m 1 --fields-terminated-by '/t' --target-dir '/myimport4/';
+
+
+#where clause::
+--------------
+sqoop import --connect jdbc:mysql://localhost/mydb5 --table student -m 1 --fields-terminated-by '/t' --where 'stud_marks >750' --target-dir '/myimport5/';
+
+
+
+#FOR SPECIFIC COLOUMN:
+-----------------------
+sqoop import --connect jdbc:mysql://localhost/mydb5 --table student -m 1 --fields-terminated-by '/t' --columns 'roll_no, stud_name' --where 'stud_marks >750' --target-dir '/myimport6/';
+
+#SQOOP script to list out databases:
+sqoop list-databases --connect jdbc:mysql://localhost/;
+
+#SQOOP script to list out tables:
+sqoop list-tables --connect jdbc:mysql://localhost/mydb5;
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+1.	customer_id             int   
+2.	customer_fname          string
+3.	customer_lname          string
+4.	customer_email          string
+5.	customer_password       string
+6.	customer_street         string
+7.	customer_city           string
+8.	customer_state          string
+9.	customer_zipcode        string
+
+
+create table customer(customer_id int, customer_fname varchar(20), customer_lname varchar(20), customer_email varchar(20), customer_password varchar(20), customer_street varchar(20), customer_city varchar(20), customer_state varchar(20), customer_zipcode varchar(20));
+
+load data local INFILE '/media/sf_MyWork/customers1.csv' into table customer fields terminated by ',';
+grant all privileges on custdb.* to ''@'localhost';
+
+sqoop import --connect jdbc:mysql://localhost/custdb --table customer -m 1 --fields-terminated-by ',' --where 'customer_state ="TX"' --target-dir '/myimp1/';
+
+sqoop import --connect jdbc:mysql://localhost/custdb --table customer -m 1 --fields-terminated-by ',' --columns 'customer_id,customer_fname,customer_lname' --where 'customer_fname like "M%"' --target-dir '/myimp2/';
+
+
+-------------date: 06/12/2022-----------------------------------------------
+
+
+#EVAL function:
+---------------
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "select * from student":
+
+#to create table using eval in mysql:
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "create table employee( id int, name varchar(20), salary int)";
+
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "insert into employee values(101, 'gaby', 300000)";
+
+
+##for writing where clause in hdfs use \$CONDITIONS
+sqoop import --connect jdbc:mysql://localhost/mydb5 --query "select * from student where stud_marks>800 and \$CONDITIONS" --target-dir '/Import10/' -m 1;
+
+hdfs dfs --cat /Import10/part-m-00000
+
+example:::
+sqoop import --connect jdbc:mysql://localhost/mydb5 --query "select * from employee where salary>200000 and \$CONDITIONS" --target-dir '/Import11/' -m 1;
+
+2]
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "create table department(deptid int, eid int, dname varchar(20), dloc varchar(20))";
+
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "insert into department values(200, 101, 'R&D','Pune')";
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "insert into department values(201, 102, 'HR','Mumbai')";
+sqoop eval --connect jdbc:mysql://localhost/mydb5 --query "insert into department values(202, 103, 'Finance','Delhi')";
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --query "select emp.name,dept.dname from department dept join employee emp on(dept.eid = emp.id) where dept.dloc = 'Mumbai' and \$CONDITIONS" --target-dir '/Import13/' -m 1; 
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --query "select emp.name,dept.dname from department dept inner join employee emp on(dept.eid = emp.id) where dept.dloc = 'Mumbai' and \$CONDITIONS" --target-dir '/Import13/' -m 1; 
+
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --table employee -m 1 --fields-terminated-by '|' --where 'salary>200000' --target-dir '/import15/' --as-sequencefile;
+
+
+## split by
+sqoop import --connect jdbc:mysql://localhost/mydb5 --username root --password password --query 'select * from employee where salary>100000 AND $CONDITIONS' --split-by employee.id --target-dir '/import20' -m 2;
+
+---------------orders schema---------
+ create table orders(order_id int,order_date varchar(20), order_customer_id int, order_status varchar(20))
+
+
+Q) find out the customers who have made more than 5 orders
+
+select  c.customer_fname,c.customer_lname, count(o.order_id) as cnt from customer c inner join orders o on (c.customer_id=o.order_customer_id) group by c.customer_fname,c.customer_lname having cnt>5;   
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --query 'select  c.customer_fname,c.customer_lname, count(o.order_customer_id) as cnt from customer c inner join orders o on (c.customer_id=o.order_customer_id) group by c.customer_fname,c.customer_lname having cnt>5 and $CONDITIONS' --target-dir '/Import21/' -m 1; 
+
+----------------------------07/12/2022 SQOOP DAY3-----------------------------------
+
+#create table in mysql
+
+create table emp1(emp_id int, NOT NULL AUTO_INCREMENT, emp_name VARCHAR(100), emp_sal INT, PRIMARY KEY(emp_id));
+
+the key should be primary key other wise incremnt will not work
+
+insert into emp1 values(101,'Gaby',15000);
+insert into emp1 values(102,'Mohit',25000);
+insert into emp1 values(103,'Jay',30000);
+insert into emp1 values(104,'Anam',45000);
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --username root --password password --table emp1 -m 1 --target-dir '/Incremental1';
+
+insert into emp1 values(105,'Simran',20000),(106,'Abhishek',25000),(107,'Abhay',45000);
+
+# to get only those last added 3 records:
+
+sqoop import --connect jdbc:mysql://localhost/mydb5 --username root --password password --table emp1 -m 1 --target-dir '/Incremental1' --incremental append --check-column emp_id --last-value 104;
+
+create external table emp1(emp_id int, name string, e_sal int) row format delimited fields terminated by ',' location '/Incremental1';
+
+alter table emp1 add column create_date timestamp default now() on update now();
+
+insert into emp1 values(108,'Savita',62000,null),(109,'Rohan',90000,null),(110,'john',45000,null);
+
+####### create emp2
+create table emp2(emp_id int, NOT NULL AUTO_INCREMENT, emp_name VARCHAR(100), emp_sal INT,create_date timestamp PRIMARY KEY(emp_id));
+
+

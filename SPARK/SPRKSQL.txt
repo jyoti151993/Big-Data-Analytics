@@ -1,0 +1,107 @@
+=================Spark SQL date:17/Dec/2022, Saturday================================================
+
+nano employee.txt
+101,John,25000,Oune
+102,Sunny,30000,Mumbai
+103,Sita,38000,NewYork
+104,Abhishek,45000,Florida
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+import org.apache.spark.sql.SQLContext
+ val ssq=new SQLContext(sc)
+val rawRdd=sc.textFile("/home/dbda/employee.txt")
+rawRdd.collect()
+scala> case class Rec(e_ID:Int, e_name: String, e_Salary:Int, e_city:String)
+
+
+scala> def makeRec(lines:String)={
+     | val w=lines.split(",")
+     | val e_ID = w(0).toInt
+     | val e_name=w(1)
+     | val e_Salary=w(2).toInt
+     | val e_city=w(3)
+     | val r=Rec(e_ID, e_name, e_Salary, e_city)
+     | r
+     | }
+
+
+
+scala> val recs=rawRdd.map(x=>makeRec(x))
+scala> recs.collect()
+
+scala> recs.toDF().show()
+scala> recs.toDF.registerTempTable("mytable2")
+scala> ssq.sql("select * from mytable2").show()
+scala> val result=ssq.sql("select e_ID, e_name from mytable2 where e_Salary>33000")
+result: org.apache.spark.sql.DataFrame = [e_ID: int, e_name: string]
+
+
+scala> result.show()
++----+--------+
+|e_ID|  e_name|
++----+--------+
+| 103|    Sita|
+| 104|Abhishek|
++----+--------+
+
+
+
+# to save the output in csv format
+result.coalesce(1).write.csv("/home/dbda/Desktop/opp")
+
+
+-----------------(customers & orders)-----------------------------
+Problem Statement: 1)order status shoul be "COMPLETE"
+2) o/p should have customers_id, customers_fname, count(customers_id)
+3) Result should be order by count of orders in ascending order fashion
+4) Result should be saved in /Result/final_output
+
+
+root@dbda-OptiPlex-9020:~# hdfs dfs -put /home/dbda/Documents/orders /orders
+ hdfs dfs -put /home/dbda/Documents/customers /customers
+
+
+++++++ on Scala+++++++++
+scala> import org.apache.spark.sql.SQLContext
+scala> val ssq=new SQLContext(sc)
+
+
+scala> spark.read.csv("hdfs://localhost:9000/customers").createOrReplaceTempView("customers")
+scala> ssq.sql(select * from customers limit 5").show()
+
+scala> ssq.sql("select _c0 as customers_id _c1 as customers_fname from customers").createTempView("customers1")
+
+
+scala> spark.read.csv("hdfs://localhost:9000/orders").createOrReplaceTempView("orders")
+> ssq.sql("select * from orders limit 5").show()
+ssq_sql("select _c2 as customers_id, _c3 as status from orders").createTempView("orders1")
+
+ssq.sql("select * from customers1 limit 5").show()
+ssq.sql("select * from orders1 limit 5").show()
+
+ssq.sql("select c.customers_id, c.customers_fname , count(o.customers_id) as cnt from customers1 c inner join orders1 o on (c.customers_id=o.customers_id) where status='COMPLETE' group by c.customers_id, c.customers_fname order by cnt ASC").write.json("hdfs://localhost:9000/Result/final_output")
+
+
+++++++ Customers (New Problem Statememt as Assign)+++++++++++++
+Output all the customers who live in California
+Use text format for the output files 
+place the result data in /result/question2
+Result should only contain records that  have state value as "CA"
+Output should only contain customer's full name
+
+
+
+++++++++++ Solution2+++++++++++++++++++++++++++++++++++++++++++++
+scala> ssq.sql("select _c1 as customers_fname, _c2 as customers_lname, _c6 as city, _c7 as state from customers").createTempView("customers2")
+
+scala> ssq.sql("select * from customers2 limit 5").show()
+ssq.sql("select customers_fname, customers_lname from customers2 where state ='CA'")
+scala> res37.show
+ssq.sql("select _c1 as customers_fname, _c2 as customers_lname, _c6 as city, _c7 as state from customers").createTempView("customers2")
+scala> ssq.sql("select concat(customers_fname,' ', customers_lname) as full_name from customers2 where state ='CA'").show
+ssq.sql("select concat(customers_fname,' ', customers_lname) as full_name from customers2 where state ='CA'").write.text("hdfs://localhost:9000/result/question3")
+
+
+
+

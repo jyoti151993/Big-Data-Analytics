@@ -1,0 +1,84 @@
+Problem statement 1:
+
+In this problem statement, we will find the average age of males and females who died in the Titanic tragedy.
++++++++++++++++++++++++++++++Solution 1++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+scala> val Titanicdata=sc.textFile("/home/jyoti/Downloads/TitanicData.txt")
+Titanicdata: org.apache.spark.rdd.RDD[String] = /home/jyoti/Downloads/TitanicData.txt MapPartitionsRDD[1] at textFile at <console>:23
+
+scala> Titanicdata.collect
+res0: Array[String] = Array(1,0,3,"Braund Mr. Owen Harris",male,22,1,0,A/5 21171,7.25,,S,, 2,1,1,"Cumings Mrs. John Bradley (Florence Briggs Thayer)",female,38,1,0,PC 17599,71.2833,C85,C,, 3,1,3,"Heikkinen Miss. Laina",female,26,0,0,STON/O2. 3101282,7.925,,S,, 4,1,1,"Futrelle Mrs. Jacques Heath (Lily May Peel)",female,35,1,0,113803,53.1,C123,S,, 5,0,3,"Allen Mr. William Henry",male,35,0,0,373450,8.05,,S,, 6,0,3,"Moran Mr. James",male,,0,0,330877,8.4583,,Q,, 7,0,1,"McCarthy Mr. Timothy J",male,54,0,0,17463,51.8625,E46,S,, 8,0,3,"Palsson Master. Gosta Leonard",male,2,3,1,349909,21.075,,S,, 9,1,3,"Johnson Mrs. Oscar W (Elisabeth Vilhelmina Berg)",female,27,0,2,347742,11.1333,,S,, 10,1,2,"Nasser Mrs. Nicholas (Adele Achem)",female,14,1,0,237736,30.0708,,C,, 11,1,3,...
+
+scala> val mapTitanicdata=Titanicdata.map(x=>x.split(","))
+mapTitanicdata: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[2] at map at <console>:23
+
+scala> mapTitanicdata.collect
+res1: Array[Array[String]] = Array(Array(1, 0, 3, "Braund Mr. Owen Harris", male, 22, 1, 0, A/5 21171, 7.25, "", S), Array(2, 1, 1, "Cumings Mrs. John Bradley (Florence Briggs Thayer)", female, 38, 1, 0, PC 17599, 71.2833, C85, C), Array(3, 1, 3, "Heikkinen Miss. Laina", female, 26, 0, 0, STON/O2. 3101282, 7.925, "", S), Array(4, 1, 1, "Futrelle Mrs. Jacques Heath (Lily May Peel)", female, 35, 1, 0, 113803, 53.1, C123, S), Array(5, 0, 3, "Allen Mr. William Henry", male, 35, 0, 0, 373450, 8.05, "", S), Array(6, 0, 3, "Moran Mr. James", male, "", 0, 0, 330877, 8.4583, "", Q), Array(7, 0, 1, "McCarthy Mr. Timothy J", male, 54, 0, 0, 17463, 51.8625, E46, S), Array(8, 0, 3, "Palsson Master. Gosta Leonard", male, 2, 3, 1, 349909, 21.075, "", S), Array(9, 1, 3, "Johns...
+
+scala> val filterData=mapTitanicdata.filter(x=>x(1)=="1").filter(x=>(x(5)!="")).map(x=>(x(4),(x(5).toDouble,1)))
+filterData: org.apache.spark.rdd.RDD[(String, (Double, Int))] = MapPartitionsRDD[7] at map at <console>:23
+
+scala> filterData.collect
+res2: Array[(String, (Double, Int))] = Array((female,(38.0,1)), (female,(26.0,1)), (female,(35.0,1)), (female,(27.0,1)), (female,(14.0,1)), (female,(4.0,1)), (female,(58.0,1)), (female,(55.0,1)), (male,(34.0,1)), (female,(15.0,1)), (male,(28.0,1)), (female,(38.0,1)), (female,(14.0,1)), (female,(3.0,1)), (female,(19.0,1)), (female,(49.0,1)), (female,(29.0,1)), (female,(21.0,1)), (female,(5.0,1)), (female,(38.0,1)), (female,(29.0,1)), (female,(17.0,1)), (male,(32.0,1)), (male,(0.83,1)), (female,(30.0,1)), (male,(29.0,1)), (female,(17.0,1)), (female,(33.0,1)), (female,(23.0,1)), (male,(23.0,1)), (female,(34.0,1)), (female,(21.0,1)), (female,(32.5,1)), (male,(12.0,1)), (male,(24.0,1)), (female,(29.0,1)), (female,(19.0,1)), (female,(22.0,1)), (female,(24.0,1)), (mal...
+
+
+scala> val reduceData=filterData.reduceByKey((x,y)=>((x._1+y._1),(x._2+y._2)))
+reduceData: org.apache.spark.rdd.RDD[(String, (Double, Int))] = ShuffledRDD[8] at reduceByKey at <console>:23
+
+scala> reduceData.collect
+res3: Array[(String, (Double, Int))] = Array((female,(5683.0,197)), (male,(2536.67,93)))
+
+
+scala> val result=reduceData.map(x=>(x._1,(x._2._1/x._2._2)))
+result: org.apache.spark.rdd.RDD[(String, Double)] = MapPartitionsRDD[9] at map at <console>:23
+
+scala> result.collect
+res4: Array[(String, Double)] = Array((female,28.84771573604061), (male,27.276021505376345))
+
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++Solution -2
+Problem statement 2:
+
+find the number of people died or survived in each class.
+
+
+scala> val titanic_data=sc.textFile("/home/jyoti/Downloads/TitanicData.txt")
+titanic_data: org.apache.spark.rdd.RDD[String] = /home/jyoti/Downloads/TitanicData.txt MapPartitionsRDD[30] at textFile at <console>:23
+
+scala> titanic_data.collect
+res0: Array[String] = Array(1,0,3,"Braund Mr. Owen Harris",male,22,1,0,A/5 21171,7.25,,S,, 2,1,1,"Cumings Mrs. John Bradley (Florence Briggs Thayer)",female,38,1,0,PC 17599,71.2833,C85,C,, 3,1,3,"Heikkinen Miss. Laina",female,26,0,0,STON/O2. 3101282,7.925,,S,, 4,1,1,"Futrelle Mrs. Jacques Heath (Lily May Peel)",female,35,1,0,113803,53.1,C123,S,, 5,0,3,"Allen Mr. William Henry",male,35,0,0,373450,8.05,,S,, 6,0,3,"Moran Mr. James",male,,0,0,330877,8.4583,,Q,, 7,0,1,"McCarthy Mr. Timothy J",male,54,0,0,17463,51.8625,E46,S,, 8,0,3,"Palsson Master. Gosta Leonard",male,2,3,1,349909,21.075,,S,, 9,1,3,"Johnson Mrs. Oscar W (Elisabeth Vilhelmina Berg)",female,27,0,2,347742,11.1333,,S,, 10,1,2,"Nasser Mrs. Nicholas (Adele Achem)",female,14,1,0,237736,30.0708,,C,, 11,1,3,...
+
+scala> val mapTitanicData=titanic_data.map(x=>x.split(","))
+mapTitanicData: org.apache.spark.rdd.RDD[Array[String]] = MapPartitionsRDD[2] at map at <console>:23
+
+scala> mapTitanicData.collect
+res1: Array[Array[String]] = Array(Array(1, 0, 3, "Braund Mr. Owen Harris", male, 22, 1, 0, A/5 21171, 7.25, "", S), Array(2, 1, 1, "Cumings Mrs. John Bradley (Florence Briggs Thayer)", female, 38, 1, 0, PC 17599, 71.2833, C85, C), Array(3, 1, 3, "Heikkinen Miss. Laina", female, 26, 0, 0, STON/O2. 3101282, 7.925, "", S), Array(4, 1, 1, "Futrelle Mrs. Jacques Heath (Lily May Peel)", female, 35, 1, 0, 113803, 53.1, C123, S), Array(5, 0, 3, "Allen Mr. William Henry", male, 35, 0, 0, 373450, 8.05, "", S), Array(6, 0, 3, "Moran Mr. James", male, "", 0, 0, 330877, 8.4583, "", Q), Array(7, 0, 1, "McCarthy Mr. Timothy J", male, 54, 0, 0, 17463, 51.8625, E46, S), Array(8, 0, 3, "Palsson Master. Gosta Leonard", male, 2, 3, 1, 349909, 21.075, "", S), Array(9, 1, 3, "Johns...
+
+
+
+
+scala> val Data=mapTitanicData.map(x=>(x(2),(x(1).toInt,1)))
+Data: org.apache.spark.rdd.RDD[(String, (Int, Int))] = MapPartitionsRDD[25] at map at <console>:23
+
+scala> Data.collect
+res14: Array[(String, (Int, Int))] = Array((3,(0,1)), (1,(1,1)), (3,(1,1)), (1,(1,1)), (3,(0,1)), (3,(0,1)), (1,(0,1)), (3,(0,1)), (3,(1,1)), (2,(1,1)), (3,(1,1)), (1,(1,1)), (3,(0,1)), (3,(0,1)), (3,(0,1)), (2,(1,1)), (3,(0,1)), (2,(1,1)), (3,(0,1)), (3,(1,1)), (2,(0,1)), (2,(1,1)), (3,(1,1)), (1,(1,1)), (3,(0,1)), (3,(1,1)), (3,(0,1)), (1,(0,1)), (3,(1,1)), (3,(0,1)), (1,(0,1)), (1,(1,1)), (3,(1,1)), (2,(0,1)), (1,(0,1)), (1,(0,1)), (3,(1,1)), (3,(0,1)), (3,(0,1)), (3,(1,1)), (3,(0,1)), (2,(0,1)), (3,(0,1)), (2,(1,1)), (3,(1,1)), (3,(0,1)), (3,(0,1)), (3,(1,1)), (3,(0,1)), (3,(0,1)), (3,(0,1)), (3,(0,1)), (1,(1,1)), (2,(1,1)), (1,(0,1)), (1,(1,1)), (2,(1,1)), (3,(0,1)), (2,(1,1)), (3,(0,1)), (3,(0,1)), (1,(1,1)), (1,(0,1)), (3,(0,1)), (1,(0,1)), (3,(1,1)), (2...
+
+
+
+scala> val cnt=Data.reduceByKey((x,y)=>((x._1+y._1),(x._2+y._2)))
+cnt: org.apache.spark.rdd.RDD[(String, (Int, Int))] = ShuffledRDD[27] at reduceByKey at <console>:23
+
+scala> cnt.collect
+res17: Array[(String, (Int, Int))] = Array((2,(87,184)), (3,(119,491)), (1,(136,216)))
+
+
+scala> val res=cnt.map(x=>(x._1,x._2._2))
+res: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[28] at map at <console>:23
+
+scala> res.collect
+res18: Array[(String, Int)] = Array((2,184), (3,491), (1,216))
+
+
+

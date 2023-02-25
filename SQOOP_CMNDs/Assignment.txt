@@ -1,0 +1,33 @@
+Question 1:
+Data Description:
+
+orders
+customers
+
+Customers Schema:
+1.	customer_id             int   
+2.	customer_fname          string
+3.	customer_lname          string
+4.	customer_email          string
+5.	customer_password       string
+6.	customer_street         string
+7.	customer_city           string
+8.	customer_state          string
+9.	         string
+
+Orders Schema:
+1.	order_id                int   
+2.	order_date              string
+3.	order_customer_id       int   
+4.	order_status            string
+
+Output Requirements:
+1. Write the sqoop job to import the data on below condition.
+2. Find all Fraud transactions per month
+2. Order Status must be equal to SUSPECTED_FRAUD
+4. Create new table to store result.
+5. Output should only contain order_date,count
+6. use yyyy-MM-dd format for order_date
+7. Output should be sorted by order_date in descending order
+
+
